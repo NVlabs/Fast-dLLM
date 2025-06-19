@@ -354,6 +354,5 @@ class LLaDAEvalHarness(LM):
 
 
 if __name__ == "__main__":
-    set_seed(1234)
     cli_evaluate()
     
