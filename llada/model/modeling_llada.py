@@ -62,7 +62,6 @@ from .configuration_llada import (
     ModelConfig,
     ActivationCheckpointingStrategy,
 )
-from einops import rearrange
 
 if sys.version_info.minor > 8:
     from collections.abc import MutableMapping
