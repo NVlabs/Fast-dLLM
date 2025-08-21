@@ -348,10 +348,11 @@ class LLaDAEvalHarness(LM):
                                         temperature=0, remasking=self.remasking, mask_id=self.mask_id, threshold=self.threshold, factor=self.factor)
 
             if self.is_instruct and 'task_id' in req.doc and str(req.doc['task_id']).lower().startswith('humaneval'):
+                generated_answer_ids = generated_answer[:, input_ids.shape[1]:]
                 if self.show_speed:
-                    num_tokens += (generated_answer != 126081).sum()
+                    num_tokens += (generated_answer_ids != 126081).sum()
                     num_nfe += nfe
-                generated_answer = self.tokenizer.decode(generated_answer[0][input_ids.shape[1]:], skip_special_tokens=True)
+                batched_generated_answer = [self.tokenizer.decode(generated_answer[i], skip_special_tokens=True) for i in range(len(generated_answer))]
             else:
                 batched_generated_answer = []
                 for i in range(len(generated_answer)):
