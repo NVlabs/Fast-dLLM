@@ -1,9 +1,27 @@
-.vscode/
+# virtual envs / editors / caches
+.venv/
+venv/
+env/
 __pycache__/
-*.py[cod]
-*$py.class
-llada/output/
-llada/evals_results/
-dream/evals_results/
+.ipynb_checkpoints/
 .DS_Store
-**/.DS_Store
+.vscode/
+.idea/
+pytest_cache/
+.mypy_cache/
+
+# local data / outputs
+logs/
+outputs/
+runs/
+wandb/
+hf_cache/
+.cache/
+data/
+*.pt
+*.bin
+*.safetensors
+*.ckpt
+
+# OS / misc
+*.swp
