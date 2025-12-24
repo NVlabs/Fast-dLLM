@@ -42,7 +42,7 @@ from transformers.utils import (
 )
 from transformers import PretrainedConfig
 from .configuration_dream import DreamConfig
-from .generation_utils import DreamGenerationMixin, DreamGenerationConfig
+from .generation_utils_block import DreamGenerationMixin, DreamGenerationConfig
 
 if is_flash_attn_2_available():
     from transformers.modeling_flash_attention_utils import _flash_attention_forward
@@ -402,10 +402,17 @@ class DreamSdpaAttention(DreamAttention):
         if past_key_value is not None:
             if dual_cache:
                 past_key, past_value = past_key_value
-                replace_indices = replace_position.nonzero(as_tuple=True)[1] 
-                past_key[:, replace_indices] = key_states
+                replace_indices = replace_position.nonzero(as_tuple=True)[1]
+
+                # Handle batched replace_position correctly
+                B = replace_position.shape[0]
+                for batch_idx in range(B):
+                    batch_replace_indices = replace_position[batch_idx].nonzero(as_tuple=True)[0]
+                    if len(batch_replace_indices) > 0:
+                        past_key[batch_idx, batch_replace_indices] = key_states[batch_idx, :len(batch_replace_indices)]
+                        past_value[batch_idx, batch_replace_indices] = value_states[batch_idx, :len(batch_replace_indices)]
+                
                 key_states = past_key
-                past_value[:, replace_indices] = value_states
                 value_states = past_value
             else:
                 past_key, past_value = past_key_value
