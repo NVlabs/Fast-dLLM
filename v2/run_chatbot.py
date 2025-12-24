@@ -3,7 +3,7 @@ import torch
 import numpy as np
 import random
 
-model_name = "Efficient-Large-Model/Fast_dLLM_v2_7B"
+model_name = "/data/models/Efficient-Large-Model/Fast_dLLM_v2_7B"
 
 model = AutoModelForCausalLM.from_pretrained(
     model_name,
@@ -40,7 +40,7 @@ while True:
     
     # Check if clear conversation history
     if user_input.lower() == "clear":
-        messages = messages[:1] if messages[0]["role"] == "system" else messages[:0]
+        messages = messages[:1] if len(messages) > 0 and messages[0]["role"] == "system" else messages[:0]
         print("Conversation history cleared!")
         continue
     
