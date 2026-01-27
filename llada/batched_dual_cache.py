@@ -11,8 +11,9 @@ logits.
 
 from __future__ import annotations
 
+import math
 import time
-from typing import Callable, Iterable, List, Optional, Sequence, Tuple
+from typing import Callable, Iterable, List, Optional, Sequence, Tuple, Dict, Any
 
 import torch
 from tqdm import tqdm
@@ -231,20 +232,31 @@ def benchmark_candidate_batching(
     candidate_position: int,
     beam_sizes: Iterable[int],
     repeats: int = 10,
-) -> List[Tuple[int, float]]:
+    warmup_repeats: int = 2,
+) -> List[Dict[str, Any]]:
     """
-    Measure average latency (seconds) for running `batched_candidate_forward` with
-    varying beam sizes. Returns a list of `(beam_size, avg_time)` tuples.
+    Measure latency (seconds) for running `batched_candidate_forward` with
+    varying beam sizes.
+
+    Returns a list of per-beam dictionaries:
+      {
+        "beam": int,
+        "times": List[float],        # one timing per repeat
+        "avg_time_s": float,         # mean across repeats
+        "std_time_s": float,         # sample std across repeats (0.0 if n<2)
+        "num_repeats": int
+      }
     """
-    timings: List[Tuple[int, float]] = []
+    results: List[Dict[str, Any]] = []
     base_block = base_block.detach()
 
     for beam in beam_sizes:
         if beam <= 0:
             continue
         candidate_ids = torch.topk(logits[0, candidate_position], k=beam).indices
-        start = time.perf_counter()
-        for _ in range(repeats):
+        per_repeat_times: List[float] = []
+        # Run warmup forwards (not recorded)
+        for _ in range(max(0, warmup_repeats)):
             batched_candidate_forward(
                 model,
                 base_block,
@@ -252,10 +264,39 @@ def benchmark_candidate_batching(
                 candidate_position,
                 candidate_ids,
             )
-        if torch.cuda.is_available():
-            torch.cuda.synchronize()
-        elapsed = (time.perf_counter() - start) / repeats
-        timings.append((beam, elapsed))
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
+        # Recorded repeats
+        for _ in range(max(1, repeats)):
+            start = time.perf_counter()
+            batched_candidate_forward(
+                model,
+                base_block,
+                past_key_values,
+                candidate_position,
+                candidate_ids,
+            )
+            if torch.cuda.is_available():
+                torch.cuda.synchronize()
+            per_repeat_times.append(time.perf_counter() - start)
 
-    return timings
+        n = len(per_repeat_times)
+        mean = sum(per_repeat_times) / n
+        if n >= 2:
+            var = sum((t - mean) ** 2 for t in per_repeat_times) / (n - 1)
+            std = math.sqrt(var)
+        else:
+            std = 0.0
+        results.append(
+            {
+                "beam": int(beam),
+                "times": per_repeat_times,
+                "avg_time_s": mean,
+                "std_time_s": std,
+                "num_repeats": n,
+            }
+        )
+
+    return results
+
 

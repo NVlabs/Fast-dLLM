@@ -12,10 +12,12 @@ from __future__ import annotations
 import argparse
 import math
 import json
+from collections import defaultdict
 from pathlib import Path
-from typing import Iterable, List, Sequence, Tuple
+from typing import Iterable, List, Sequence, Tuple, Dict, Any, Optional
 
 import matplotlib.pyplot as plt
+import numpy as np
 import torch
 from tqdm import tqdm
 
@@ -49,11 +51,12 @@ def benchmark_during_generation(
     threshold: float | None,
     beam_sizes: Iterable[int],
     repeats: int,
+    warmup_repeats: int = 2,
     maximum_test_num_each_block: int = 4,
-) -> List[Tuple[int, float]]:
+) -> List[Dict[str, Any]]:
     """
     Clone of `generate_with_dual_cache` that simply inserts a benchmarking call before
-    each confidence-based update. Returns flattened `(beam_size, latency)` data.
+    each confidence-based update. Returns a list of timing dicts for each tested beam.
     """
     assert prompt.shape[0] == 1, "benchmark currently assumes batch size 1"
     assert gen_length % block_length == 0
@@ -70,7 +73,7 @@ def benchmark_during_generation(
     )
     seq[:, : prompt.shape[1]] = prompt
 
-    scatter_records: List[Tuple[int, float]] = []
+    timing_records: List[Dict[str, Any]] = []
 
     for block_idx in range(num_blocks):
         s = prompt.shape[1] + block_idx * block_length
@@ -115,7 +118,7 @@ def benchmark_during_generation(
 
             candidate_pos = _select_first_mask_position(mask_blk[0])
             if candidate_pos is not None and test_num < maximum_test_num_each_block:
-                timing_pairs = benchmark_candidate_batching(
+                timing_entries = benchmark_candidate_batching(
                     model=model,
                     base_block=seq[:, s:e].detach(),
                     past_key_values=past_key_values,
@@ -123,8 +126,9 @@ def benchmark_during_generation(
                     candidate_position=candidate_pos,
                     beam_sizes=beam_sizes,
                     repeats=repeats,
+                    warmup_repeats=warmup_repeats,
                 )
-                scatter_records.extend(timing_pairs)
+                timing_records.extend(timing_entries)
                 test_num += 1
             quota = None if threshold is not None else num_transfer_tokens[:, step]
             x0_blk, transfer_idx_blk = get_transfer_index(
@@ -134,24 +138,70 @@ def benchmark_during_generation(
             blk_new = torch.where(transfer_idx_blk, x0_blk, blk_old)
             seq = torch.cat([seq[:, :s], blk_new, seq[:, e:]], dim=1)
 
-    return scatter_records
+    return timing_records
 
 
-def plot_timings(data: List[Tuple[int, float]], output_path: Path) -> None:
+def plot_timings(beam_to_times: Dict[int, List[float]], output_path: Path) -> None:
     """
-    Draw a scatter plot (beam size vs. latency) and save it to `output_path`.
+    Plot beam size vs. latency with mean and 95% CI error bars,
+    overlaid with jittered raw measurements, and save to `output_path`.
     """
-    if not data:
+    if not beam_to_times:
         raise ValueError("No timing data collected; cannot plot.")
-    beams, times = zip(*data)
 
-    plt.figure(figsize=(6, 4))
-    plt.scatter(beams, times, alpha=0.7)
+    beams_sorted = sorted(beam_to_times.keys())
+    means: List[float] = []
+    ci95: List[float] = []
+    for b in beams_sorted:
+        arr = np.array(beam_to_times[b], dtype=np.float64)
+        n = max(1, arr.size)
+        mu = float(arr.mean())
+        sd = float(arr.std(ddof=1)) if arr.size >= 2 else 0.0
+        se = sd / math.sqrt(n) if n > 0 else 0.0
+        means.append(mu)
+        ci95.append(1.96 * se)
+
+    try:
+        plt.style.use("seaborn-v0_8-whitegrid")
+    except Exception:
+        plt.style.use("seaborn-whitegrid")
+    plt.figure(figsize=(7, 4.5))
+
+    plt.errorbar(
+        beams_sorted,
+        means,
+        yerr=ci95,
+        fmt="o-",
+        color="C0",
+        ecolor="C0",
+        elinewidth=1.2,
+        capsize=4,
+        capthick=1.2,
+        markersize=5.5,
+        linewidth=1.5,
+        label="Mean ± 95% CI",
+    )
+
+    rng = np.random.default_rng(12345)
+    for i, b in enumerate(beams_sorted):
+        xs = np.full(len(beam_to_times[b]), b, dtype=np.float64)
+        x_jitter = (rng.random(len(xs)) - 0.5) * 0.35
+        plt.scatter(
+            xs + x_jitter,
+            beam_to_times[b],
+            color="C0",
+            alpha=0.35,
+            s=18,
+            linewidths=0,
+            label="Raw repeats" if i == 0 else "_nolegend_",
+        )
+
     plt.xlabel("Beam size")
-    plt.ylabel("Average batched forward time (s)")
+    plt.ylabel("Batched forward time (s)")
     plt.title("KV-cache batched forward latency")
-    plt.grid(True, linestyle="--", alpha=0.4)
-    plt.savefig(output_path, bbox_inches="tight")
+    plt.legend(frameon=False)
+    plt.tight_layout()
+    plt.savefig(output_path, bbox_inches="tight", dpi=200)
     plt.close()
 
 
@@ -159,17 +209,20 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Benchmark batched KV-cache forwards.")
     parser.add_argument("--model-name", default="GSAI-ML/LLaDA-8B-Instruct")
     parser.add_argument("--prompt", default="Lily can run 12 kilometers per hour for 4 hours. After that, she runs 6 kilometers per hour. How many kilometers can she run in 8 hours?")
+    parser.add_argument("--input-jsonl", type=Path, default=None, help="Path to JSONL file containing entries with type=='prediction' and a 'prompt' field.")
     parser.add_argument("--steps", type=int, default=256)
     parser.add_argument("--gen-length", type=int, default=256)
     parser.add_argument("--block-length", type=int, default=64)
     parser.add_argument("--beam-max", type=int, default=16)
     parser.add_argument("--beam-min", type=int, default=1)
     parser.add_argument("--beam-repeats", type=int, default=5, help="Average over this many calls per beam size.")
+    parser.add_argument("--warmup-repeats", type=int, default=2, help="Number of initial iterations to warm up (not recorded) per beam.")
     parser.add_argument("--temperature", type=float, default=0.0)
     parser.add_argument("--remasking", default="low_confidence")
     parser.add_argument("--mask-id", type=int, default=126336)
     parser.add_argument("--threshold", type=float, default=None)
     parser.add_argument("--output-plot", type=Path, default=Path("beam_vs_time.png"))
+    parser.add_argument("--output-jsonl", type=Path, default=None, help="Optional path to write JSONL mapping of input profiles to wallclock times.")
     return parser.parse_args()
 
 
@@ -188,39 +241,115 @@ def main() -> None:
         .eval()
     )
 
-    chat_prompt = tokenizer.apply_chat_template(
-        [{"role": "user", "content": args.prompt}],
-        add_generation_prompt=True,
-        tokenize=False,
-    )
-    input_ids = tokenizer(chat_prompt)["input_ids"]
-    prompt_tensor = torch.tensor(input_ids, device=device).unsqueeze(0)
+    def load_prompts_from_jsonl(path: Path) -> List[Dict[str, Any]]:
+        prompts: List[Dict[str, Any]] = []
+        with path.open("r") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    obj = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if obj.get("type") != "prediction":
+                    continue
+                prompt_text = obj.get("prompt")
+                if not isinstance(prompt_text, str):
+                    continue
+                prompts.append({
+                    "idx": obj.get("idx"),
+                    "prompt": prompt_text,
+                })
+        return prompts
+
+    # Collect prompts
+    prompt_entries: List[Dict[str, Any]]
+    if args.input_jsonl is not None:
+        prompt_entries = load_prompts_from_jsonl(args.input_jsonl)
+        if not prompt_entries:
+            raise ValueError("No prediction entries with 'prompt' found in input JSONL.")
+    else:
+        # Fallback to single provided prompt, wrapped via chat template for consistency
+        chat_prompt = tokenizer.apply_chat_template(
+            [{"role": "user", "content": args.prompt}],
+            add_generation_prompt=True,
+            tokenize=False,
+        )
+        prompt_entries = [{"idx": None, "prompt": chat_prompt}]
 
     beam_sizes = range(args.beam_min, args.beam_max + 1)
 
-    data = benchmark_during_generation(
-        model=model,
-        prompt=prompt_tensor,
-        steps=args.steps,
-        gen_length=args.gen_length,
-        block_length=args.block_length,
-        temperature=args.temperature,
-        remasking=args.remasking,
-        mask_id=args.mask_id,
-        threshold=args.threshold,
-        beam_sizes=beam_sizes,
-        repeats=args.beam_repeats,
-    )
+    # Aggregate timing data across prompts (collect all repeats per beam)
+    all_timings: Dict[int, List[float]] = defaultdict(list)
+    jsonl_records: List[Dict[str, Any]] = []
+
+    for entry in tqdm(prompt_entries, desc="Benchmarking prompts"):
+        raw_prompt: str = entry["prompt"]
+        # The provided JSONL 'prompt' is already in chat-formatted text with special tokens.
+        input_ids = tokenizer(raw_prompt)["input_ids"]
+        prompt_tensor = torch.tensor(input_ids, device=device).unsqueeze(0)
+
+        timing_entries = benchmark_during_generation(
+            model=model,
+            prompt=prompt_tensor,
+            steps=args.steps,
+            gen_length=args.gen_length,
+            block_length=args.block_length,
+            temperature=args.temperature,
+            remasking=args.remasking,
+            mask_id=args.mask_id,
+            threshold=args.threshold,
+            beam_sizes=beam_sizes,
+            repeats=args.beam_repeats,
+            warmup_repeats=args.warmup_repeats,
+        )
+        for rec in timing_entries:
+            b = int(rec["beam"])
+            all_timings[b].extend(list(rec.get("times", [])))
+
+        # Prepare JSONL records mapping input profiles to wallclock times
+        for rec in timing_entries:
+            # Per-repeat records
+            for t in rec.get("times", []):
+                jsonl_records.append({
+                    "type": "timing",
+                    "idx": entry.get("idx"),
+                    "model": args.model_name,
+                    "steps": args.steps,
+                    "gen_length": args.gen_length,
+                    "block_length": args.block_length,
+                    "beam_size": int(rec["beam"]),
+                    "repeats": args.beam_repeats,
+                    "prompt_len_tokens": len(input_ids),
+                    "time_s": float(t),
+                })
+            # Summary record per (prompt, beam)
+            jsonl_records.append({
+                "type": "timing_summary",
+                "idx": entry.get("idx"),
+                "model": args.model_name,
+                "steps": args.steps,
+                "gen_length": args.gen_length,
+                "block_length": args.block_length,
+                "beam_size": int(rec["beam"]),
+                "repeats": int(rec.get("num_repeats", args.beam_repeats)),
+                "prompt_len_tokens": len(input_ids),
+                "avg_time_s": float(rec.get("avg_time_s", 0.0)),
+                "std_time_s": float(rec.get("std_time_s", 0.0)),
+            })
 
     
 
-    plot_timings(data, args.output_plot)
-    #save the data as json
-    with open("beam_timings.json", "w") as f:
-        
-        json.dump(data, f)
+    plot_timings(all_timings, args.output_plot)
+    # Optional: write JSONL mapping of input profiles to wallclock times
+    if args.output_jsonl is not None:
+        with args.output_jsonl.open("w") as f:
+            for rec in jsonl_records:
+                f.write(json.dumps(rec) + "\n")
     print(f"Saved scatter plot to {args.output_plot.resolve()}")
 
 
 if __name__ == "__main__":
     main()
+
