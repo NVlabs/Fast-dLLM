@@ -478,7 +478,14 @@ class DreamGenerationMixin:
                 # Prepare attention mask for cached generation
                 if attention_mask != "full":
                     # Adjust attention mask for current position
-                    current_attention_mask = attention_mask[:, :, :, current_block_start:]
+                    if dual_cache:
+                        # In dual_cache mode: query is block tokens, key is full sequence
+                        # attention_mask shape: [B, 1, N, N] -> need [B, 1, block_length, N]
+                        current_attention_mask = attention_mask[:, :, current_block_start:current_block_end, :]
+                    else:
+                        # In non-dual-cache mode: query is remaining tokens, key is full sequence
+                        # attention_mask shape: [B, 1, N, N] -> need [B, 1, remaining_length, N]
+                        current_attention_mask = attention_mask[:, :, current_block_start:, :]
                 else:
                     current_attention_mask = attention_mask
                 
