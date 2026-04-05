@@ -576,17 +576,48 @@
         <div class="description-content">
           <h2>Case Study</h2>
           <p>
-            We present qualitative examples spanning math reasoning, art recognition, celebrity identification, chart QA, and physical AI scenarios (autonomous driving and robotic manipulation).
-            Across all categories, Fast-dVLM generates detailed, accurate, and fluent responses while maintaining high decoding throughput (63.7&ndash;115.0 tokens/s), with Tokens/NFE ratios consistently above 1.5.
+            We present qualitative examples to illustrate how Fast-dVLM compares with the AR baseline in both response quality and decoding efficiency across diverse visual understanding tasks.
+          </p>
+        </div>
+
+        <div class="description-content">
+          <h2>Math Reasoning</h2>
+          <p>
+            On a constrained optimization problem from MMMU-Pro-V, both the AR baseline and Fast-dVLM correctly identify the optimal solution and produce coherent step-by-step reasoning.
+            Notably, Fast-dVLM outputs cleaner, more human-readable mathematical notation.
+            Despite generating a comparable amount of reasoning, Fast-dVLM completes the response at <strong>77.7 tokens/s</strong>, a <strong>1.6&times;</strong> speedup over the baseline's 47.4 tokens/s.
           </p>
         </div>
         <div>
             <img src="asset/case_study.png" alt="Case study: math reasoning on MMMU-Pro-V."
                  class="inserted-image">
         </div>
+
+        <div class="description-content">
+          <h2>Diverse Visual Understanding</h2>
+          <p>
+            Across art style recognition, celebrity identification, and chart question answering, Fast-dVLM generates detailed, accurate, and fluent responses.
+            It correctly identifies impressionist style and attributes paintings to Claude Monet, recognizes Lionel Messi with biographical context, and comprehensively reads chart data with trend analysis.
+            Decoding throughput remains high across different response lengths, ranging from <strong>63.7 tokens/s</strong> for short descriptions to <strong>115.0 tokens/s</strong> for long chart analysis, with Tokens/NFE ratios consistently above 1.5.
+          </p>
+        </div>
         <div>
             <img src="asset/more_case_study.png" alt="More case studies: art, celebrity, chart QA."
                  class="inserted-image">
+        </div>
+
+        <div class="description-content">
+          <h2>Physical AI Applications</h2>
+          <p>
+            The inference speedup of Fast-dVLM is particularly impactful for <strong>physical AI</strong> deployments such as autonomous driving and robotic manipulation, where VLMs serve as core perception-reasoning modules on resource-constrained edge devices.
+            In these scenarios, models typically operate at batch size one with strict real-time latency requirements&mdash;exactly the regime where autoregressive decoding is most bottlenecked by memory bandwidth.
+            Fast-dVLM's block-parallel decoding shifts the workload toward a more compute-bound regime, enabling significantly faster responses while maintaining generation quality.
+          </p>
+          <p>
+            In the autonomous driving example, the model correctly reads highway signage and reasons about lane selection, producing a concise 149-token response at <strong>73.3 tokens/s</strong>.
+            In the robotic manipulation example, it generates a detailed 488-token, 8-step guide at <strong>73.0 tokens/s</strong>.
+            Both examples achieve a Tokens/step ratio above 1.68, confirming that the block-diffusion speedup generalizes to long-form embodied reasoning tasks.
+          </p>
         </div>
         <div>
             <img src="asset/physical_ai.png" alt="Physical AI case study: autonomous driving and robotic manipulation."
