@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" type="image/png" href="https://www.nvidia.com/favicon.ico">
+    <script async src="//busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fast-dVLM</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+            color: black;
+            background-size: contain;
+            background-attachment: fixed;
+            background-position: center;
+            direction: ltr;
+        }
+        .hero {
+            text-align: center;
+            padding: 50px 0;
+            background-color: #fff;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+        .hero h1 {
+            font-size: 5em;
+            margin: 0.2em 0;
+        }
+        .hero h2 {
+            font-size: 2.8em;
+            margin: 0.2em 0;
+            font-weight: normal;
+            line-height: 1.4;
+        }
+        .hero p {
+            font-size: 1.4em;
+            margin-bottom: 1em;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 0.9em;
+            color: white;
+            background-color: black;
+            border-radius: 30px;
+            text-decoration: none;
+        }
+        .button_green {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 0.9em;
+            color: black;
+            background-color: #76b900;
+            border-radius: 30px;
+            text-decoration: none;
+        }
+        .description {
+            font-family: Arial, sans-serif;
+            font-style: normal;
+            font-size: 17px;
+            line-height: 1.47;
+            color: #333;
+            letter-spacing: -0.022em;
+            font-weight: 400;
+            background-color: #fff;
+            padding: 20px 0;
+            text-align: center;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            box-shadow: 2px 4px 12px #00000054;
+        }
+        .description_noborder {
+            font-family: Arial, sans-serif;
+            font-style: normal;
+            font-size: 17px;
+            line-height: 1.47;
+            color: #333;
+            letter-spacing: -0.022em;
+            font-weight: 400;
+            background-color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+        .description-content {
+            max-width: 65%;
+            margin: 0 auto;
+            padding: 20px;
+            font-style: normal;
+            border-radius: 18px;
+        }
+        .description-content h2 {
+            display: block;
+            color: black;
+            font-size: 1.5em;
+            line-height: 1.125;
+            letter-spacing: .004em;
+            font-weight: 600;
+            text-align: left;
+            margin-block-start: 0.83em;
+            margin-block-end: 0.83em;
+            margin-inline-start: 0px;
+            margin-inline-end: 0px;
+            font-style: normal;
+        }
+        .description-content p {
+            font-size: 1.1em;
+            text-align: left;
+            font-weight: normal;
+        }
+        .citation {
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            color: black;
+            padding: 10px;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .citation-content {
+            text-align: left;
+            border-radius: 15px;
+            font-size: 0.8em;
+            max-width: 80%;
+            margin: 0 auto;
+            margin-top: -30px;
+            padding: 0;
+            background-color: #f5f5f5;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+        }
+        .citation-content h2 {
+            font-size: 2em;
+            text-align: left;
+            font-weight: normal;
+        }
+        .citation pre {
+            border-radius: 15px;
+            max-width: 90%;
+            text-align: left;
+        }
+        .footer {
+            background-color: #f5f5f5;
+            box-shadow: 2px 4px 12px #00000054;
+            color: #333;
+            padding: 20px;
+            text-align: center;
+            margin-top: -20px;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+        .footer a {
+            color: dodgerblue;
+            text-decoration: none;
+        }
+        .inserted-image {
+            max-width: 80%;
+            height: auto;
+            margin: 30px;
+            margin-top: 10px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px 3px #00000030;
+        }
+        .inserted-image-noshadow {
+            max-width: 30%;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 10px;
+        }
+        .video-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        video {
+            max-width: 80%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px 3px #00000054;
+        }
+        .logo {
+            color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            gap: 60px;
+        }
+        table.results {
+            border-collapse: collapse;
+            margin: 20px auto;
+            font-size: 0.95em;
+            max-width: 90%;
+        }
+        table.results th, table.results td {
+            border: 1px solid #ddd;
+            padding: 8px 14px;
+            text-align: center;
+        }
+        table.results th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+        }
+        table.results tr.section-header td {
+            background-color: #fafafa;
+            font-weight: 600;
+            font-style: italic;
+            text-align: center;
+        }
+        table.results tr.section-header-ar td {
+            color: #b33;
+        }
+        table.results tr.section-header-diff td {
+            color: #336;
+        }
+        table.results td.best {
+            background-color: #dcebff;
+            font-weight: bold;
+        }
+        table.results td.second {
+            background-color: #f0f5ff;
+            text-decoration: underline;
+        }
+        table.results-speed {
+            border-collapse: collapse;
+            margin: 20px auto;
+            font-size: 0.95em;
+        }
+        table.results-speed th, table.results-speed td {
+            border: 1px solid #ddd;
+            padding: 8px 16px;
+            text-align: center;
+        }
+        table.results-speed th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+        }
+        @media (max-width: 4096px) {
+            .demo iframe { width: 800px; }
+        }
+        @media (min-width: 2048px) {
+            .description-content { max-width: 728px; padding: 10px; }
+            .citation-content { max-width: 728px; padding: 10px; }
+            .inserted-image { max-width: 1024px; padding: 10px; }
+            .inserted-image-noshadow { max-width: 384px; }
+            video { max-width: 1024px; }
+        }
+        @media (min-width: 1024px) {
+            .description-content { max-width: 728px; padding: 10px; }
+            .citation-content { max-width: 728px; padding: 10px; }
+            .inserted-image { max-width: 826px; padding: 5px; }
+            .inserted-image-noshadow { max-width: 384px; }
+            video { max-width: 728px; }
+        }
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 3em; }
+            .hero h2 { font-size: 2em; }
+            .hero p { font-size: 1em; }
+            .description-content { max-width: 92%; padding: 10px; }
+            .citation-content { max-width: 92%; padding: 10px; }
+            .inserted-image { max-width: 95%; padding: 5px; }
+            .inserted-image-noshadow { max-width: 50%; margin-left: auto; margin-right: auto; }
+            video { max-width: 92%; }
+            .logo { gap: 10px; }
+            table.results { font-size: 0.75em; }
+            table.results th, table.results td { padding: 4px 6px; }
+            table.results-speed { font-size: 0.8em; }
+        }
+        @media (prefers-color-scheme: dark) {
+            .description { background-color: #333; color: white; }
+            .description_noborder { background-color: #333; color: white; }
+            .description_noborder h2 { background-color: #333; color: white; }
+            .description-content h2 { background-color: #333; color: white; }
+            .citation { background-color: #333; color: white; }
+            .citation-content { background-color: #555; }
+            .citation-content h2 { background-color: #555; }
+            .footer { background-color: #222; color: white; }
+            table.results th { background-color: #444; color: white; }
+            table.results td { border-color: #555; }
+            table.results tr.section-header td { background-color: #3a3a3a; }
+            table.results td.best { background-color: #2a3a5a; }
+            table.results td.second { background-color: #2f3545; }
+            table.results-speed th { background-color: #444; color: white; }
+            table.results-speed td { border-color: #555; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+
+        <h2>Fast-dVLM: Efficient Block-Diffusion VLM <br>
+            via Direct Conversion from Autoregressive VLM</h2>
+
+        <div style="margin-top: 20px; text-align: center;">
+            <p style="font-size: 1.3em; margin-bottom: 5px; line-height: 2.0;">
+                <a href="https://hills-code.github.io/" target="_blank" style="color: #76b900;">Chengyue Wu</a><sup>1,2</sup>,
+                <a href="#" target="_blank" style="color: #76b900;">Shiyi Lan</a><sup>2</sup>,
+                <a href="https://www.yongganfu.com/" target="_blank" style="color: #76b900;">Yonggan Fu</a><sup>2</sup>,
+                <a href="https://sensengao.github.io/" target="_blank" style="color: #76b900;">Sensen Gao</a><sup>4</sup>,
+                <a href="https://scholar.google.com/citations?user=AlYwtB4AAAAJ&hl=en" target="_blank" style="color: #76b900;">Jin Wang</a><sup>1,2</sup>,
+                <a href="https://www.linkedin.com/in/yujincheng/?locale=en" target="_blank" style="color: #76b900;">Jincheng Yu</a><sup>2</sup>,
+                <br>
+                <a href="https://alvarezlopezjosem.github.io/" target="_blank" style="color: #76b900;">Jose M. Alvarez</a><sup>2</sup>,
+                <a href="https://www.pmolchanov.com/" target="_blank" style="color: #76b900;">Pavlo Molchanov</a><sup>2</sup>,
+                <a href="http://luoping.me/" target="_blank" style="color: #76b900;">Ping Luo</a><sup>1</sup>,
+                <a href="https://hanlab.mit.edu/songhan/" target="_blank" style="color: #76b900;">Song Han</a><sup>2,3</sup>,
+                <a href="https://lzhu.me/" target="_blank" style="color: #76b900;">Ligeng Zhu</a><sup>2</sup>,
+                <a href="https://xieenze.github.io/" target="_blank" style="color: #76b900;">Enze Xie</a><sup>2</sup>
+            </p>
+            <p style="font-size: 1.2em; color: #888;">
+                <sup>1</sup>The University of Hong Kong, <sup>2</sup>NVIDIA, <sup>3</sup>MIT, <sup>4</sup>MBZUAI
+            </p>
+        </div>
+
+        <div style="overflow: hidden; background-color: #fff;">
+          <div class="logo" style="padding: 12px;">
+            <a href="" style="text-decoration: none; font-size: 16px;">
+                <img src="../asset/hku.png" alt="HKU Logo" style="width: auto; height: 40px;">
+            </a>
+            <a href="https://www.nvidia.com/" style="text-decoration: none; font-size: 16px;">
+              <img src="https://nv-tlabs.github.io/3DStyleNet/assets/nvidia.svg" alt="NVIDIA Logo" style="width: auto; height: 30px;">
+            </a>
+            <a href="https://hanlab.mit.edu/" style="text-decoration: none; font-size: 16px;">
+              <img src="../asset/mit_han.png" alt="MIT Logo" style="width: auto; height: 30px;">
+            </a>
+          </div>
+        </div>
+
+        <a href="#" class="button">Paper</a>
+        <a href="https://github.com/NVlabs/Fast-dLLM" class="button">Code</a>
+        <a href="https://nvlabs.github.io/Fast-dLLM/" class="button_green">Fast-dLLM</a>
+        <a href="https://nvlabs.github.io/Fast-dLLM/v2" class="button_green">Fast-dLLM v2</a>
+    </div>
+
+        <!-- Video Demo -->
+        <div class="video-container">
+            <video src="asset/demo.mp4"
+                   autoplay
+                   muted
+                   loop
+                   playsinline
+                   controls>
+              Your browser does not support the video tag.
+            </video>
+            <figcaption>
+              Realtime throughput comparison between Fast-dVLM and Qwen2.5-VL-3B.
+            </figcaption>
+        </div>
+
+        <div class="description-content">
+          <h2>About Fast-dVLM</h2>
+          <p>
+            Vision-language models (VLMs) predominantly rely on autoregressive decoding, which generates tokens one at a time and fundamentally limits inference throughput.
+            This limitation is especially acute in <strong>physical AI scenarios</strong> such as robotics and autonomous driving, where VLMs are deployed on edge devices at batch size one, making AR decoding memory-bandwidth-bound and leaving hardware parallelism underutilized.
+          </p>
+          <p>
+            We present <strong style="font-size: 18px;">Fast-dVLM</strong>, a block-diffusion-based VLM that enables <strong style="font-size: 18px;">KV-cache-compatible parallel decoding</strong> and <strong style="font-size: 18px;">speculative block decoding</strong> for inference acceleration.
+            We systematically compare two AR-to-diffusion conversion strategies: a <em>two-stage</em> approach that first adapts the LLM backbone with text-only diffusion fine-tuning before multimodal training, and a <em>direct</em> approach that converts the full AR VLM in one stage.
+            Under comparable training budgets, direct conversion proves substantially more efficient by leveraging the already multimodally aligned VLM.
+          </p>
+          <p>
+            We introduce a suite of multimodal diffusion adaptations&mdash;block-size annealing, causal context attention, auto-truncation masking, and vision-efficient concatenation&mdash;that collectively enable effective block diffusion in the VLM setting.
+            Extensive experiments across <strong style="font-size: 18px;">11 multimodal benchmarks</strong> show Fast-dVLM matches its autoregressive counterpart in generation quality.
+            With SGLang integration and FP8 quantization, Fast-dVLM achieves over <strong style="font-size: 18px;">6&times; end-to-end inference speedup</strong> over the AR baseline.
+          </p>
+        </div>
+
+        <!-- Teaser Figure -->
+        <div>
+            <img src="asset/teaser.png" alt="Overview of Fast-dVLM: (a) accuracy vs speedup on MMMU-Pro-V, (b) benchmark comparison against Qwen2.5-VL-3B, (c) up to 6.18x end-to-end speedup."
+                 class="inserted-image">
+        </div>
+
+        <!-- Dual Path Figure -->
+        <div class="description-content">
+          <h2>Direct vs. Two-Stage Conversion</h2>
+          <p>
+            We compare two strategies for converting a pretrained AR VLM into a block-diffusion model:
+          </p>
+          <p>
+            &nbsp;&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+            <strong style="font-size: 18px;">Two-stage path:</strong>
+            Stage 1 converts only the LLM backbone via text-only diffusion fine-tuning; Stage 2 attaches the vision encoder and MLP projector and jointly fine-tunes the entire model on multimodal data.
+          </p>
+          <p>
+            &nbsp;&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+            <strong style="font-size: 18px;">Direct path:</strong>
+            The complete AR VLM is directly fine-tuned for block-diffusion on multimodal data in a single stage, yielding a simpler pipeline that leverages the pretrained multimodal alignment.
+          </p>
+          <p>
+            Under comparable training budgets (both trained on ~2M samples for a single epoch), the direct path achieves a substantially higher average score (<strong>73.3 vs. 60.2</strong>), outperforming the two-stage path on all 10 benchmarks.
+          </p>
+        </div>
+        <div>
+            <img src="asset/dualpath.png" alt="Two AR-to-diffusion conversion strategies: two-stage vs. direct path."
+                 class="inserted-image">
+        </div>
+
+        <!-- Radar Chart -->
+        <div style="width: 100%; display: flex; justify-content: center;">
+            <figure style="display: flex; flex-direction: column; align-items: center; max-width: 900px; width: 100%;">
+              <div style="display: flex; justify-content: center; width: 100%;">
+                  <img src="asset/radar_chart.png" alt="Radar chart: direct vs two-stage path comparison across benchmarks." class="inserted-image" style="max-width: 60%; min-width: 120px;">
+              </div>
+              <figcaption style="margin-top: 12px; text-align: center; color: #555; font-size: 1em;">
+                  Benchmark comparison between direct and two-stage conversion paths across 10 multimodal tasks.
+              </figcaption>
+            </figure>
+        </div>
+
+        <!-- Architecture -->
+        <div class="description-content">
+          <h2>Training Architecture</h2>
+          <p>
+            Both paths share the same training pipeline. Only response text tokens are corrupted: a noisy stream is constructed by masking response positions and concatenated with the clean stream. The attention mask enforces three rules:
+          </p>
+          <p>
+            &nbsp;&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+            <strong>N2N:</strong> Noisy tokens attend bidirectionally within their block for parallel denoising.
+          </p>
+          <p>
+            &nbsp;&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+            <strong>N2C:</strong> Noisy tokens attend to clean tokens from preceding blocks, including vision tokens.
+          </p>
+          <p>
+            &nbsp;&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+            <strong>C2C:</strong> Clean tokens follow token-level causal attention, enabling joint AR loss training and AR decoding at inference.
+          </p>
+        </div>
+        <div>
+            <img src="asset/architecture.png" alt="Training architecture and attention mask with block size B=2."
+                 class="inserted-image">
+        </div>
+
+        <!-- Training Recipe -->
+        <div class="description-content">
+          <h2>Training Recipe</h2>
+          <p>
+            &nbsp;&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+            <strong style="font-size: 18px;">Block-Size Annealing:</strong>
+            A curriculum that progressively increases the block size, allowing the model to learn fine-grained denoising before tackling larger corruption spans.
+          </p>
+          <p>
+            &nbsp;&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+            <strong style="font-size: 18px;">Auto-Truncation Masking:</strong>
+            Automatically truncates each response's last block at the response boundary, preventing cross-turn leakage in multi-turn dialogue while preserving block-parallel denoising.
+          </p>
+          <p>
+            &nbsp;&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+            <strong style="font-size: 18px;">Vision-Efficient Concatenation:</strong>
+            Since vision embeddings are never corrupted, they are included only in the clean stream. On Qwen2.5-VL-3B (H100, context length 2048), this reduces peak memory by 15.0% and training time by 14.2%.
+          </p>
+          <p>
+            &nbsp;&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+            <strong style="font-size: 18px;">Joint Objective:</strong>
+            The total loss combines a diffusion loss with a causal LM loss (&alpha;=&beta;=0.5), learning parallel denoising while preserving AR generation capability.
+          </p>
+        </div>
+
+        <!-- Benchmark Results -->
+        <div class="description-content">
+          <h2>Benchmark Results</h2>
+          <p>
+            We evaluate Fast-dVLM on 11 multimodal benchmarks. On short-answer tasks, Fast-dVLM with speculative decoding achieves an average score of <strong>74.0</strong>, exactly matching the AR baseline, while achieving <strong>2.63&times; Tokens/NFE</strong>.
+            Among diffusion VLMs, Fast-dVLM achieves the best results on 8 out of 11 short-answer benchmarks.
+          </p>
+        </div>
+
+        <table class="results">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>AI2D</th><th>ChartQA</th><th>DocVQA</th><th>GQA</th><th>MMBench</th><th>MMMU</th><th>POPE</th>
+              <th>RWQA</th><th>SEED2+</th><th>TextVQA</th><th>Avg</th>
+              <th>MMMU-Pro-V</th><th>Tok/NFE</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="section-header section-header-ar"><td colspan="14">Autoregressive Vision-Language Models</td></tr>
+            <tr><td>VILA-1.5-3B</td><td>58.0</td><td>53.0</td><td>44.3</td><td>61.4</td><td>60.5</td><td>31.8</td><td>86.8</td><td>53.2</td><td>41.2</td><td>58.2</td><td>54.8</td><td>6.1</td><td>1.00</td></tr>
+            <tr><td>MiniCPM-V-2</td><td>65.0</td><td>59.2</td><td>69.8</td><td>51.7</td><td>66.3</td><td>37.9</td><td>86.5</td><td>56.3</td><td>52.5</td><td>74.4</td><td>62.0</td><td>10.3</td><td>1.00</td></tr>
+            <tr><td>Intern-VL-2.5-4B</td><td>81.3</td><td>77.8</td><td>91.1</td><td>61.0</td><td>80.7</td><td>50.0</td><td>89.3</td><td>64.6</td><td>67.0</td><td>78.8</td><td>74.2</td><td>24.6</td><td>1.00</td></tr>
+            <tr><td>Qwen2.5-VL-3B</td><td>80.8</td><td>84.0</td><td>93.1</td><td>59.0</td><td>76.9</td><td>47.3</td><td>86.2</td><td>65.1</td><td>68.6</td><td>79.1</td><td>74.0</td><td>26.3</td><td>1.00</td></tr>
+            <tr class="section-header section-header-diff"><td colspan="14">Diffusion Vision-Language Models</td></tr>
+            <tr><td>LaViDa</td><td>70.0</td><td>59.0</td><td>64.6</td><td>55.5</td><td>70.5</td><td>43.3</td><td>81.4</td><td>54.5</td><td>57.7</td><td>60.3</td><td>61.7</td><td>10.5</td><td>1.00</td></tr>
+            <tr><td>Dimple</td><td>74.4</td><td>63.3</td><td>37.7</td><td>59.2</td><td class="second">74.6</td><td>45.2</td><td class="second">86.2</td><td>55.4</td><td>51.7</td><td>61.6</td><td>60.9</td><td>12.4</td><td>1.00</td></tr>
+            <tr><td>LLaDA-V</td><td class="second">77.8</td><td class="second">78.3</td><td class="second">83.9</td><td>53.4</td><td class="best">82.9</td><td class="best">48.6</td><td>81.8</td><td class="second">63.2</td><td class="best">68.7</td><td>64.7</td><td>70.3</td><td class="second">18.6</td><td>1.00</td></tr>
+            <tr><td><strong>Fast-dVLM (MDM)</strong></td><td class="best">79.7</td><td>82.8</td><td>92.1</td><td class="second">63.0</td><td>74.2</td><td>44.6</td><td class="best">88.6</td><td class="best">65.1</td><td class="second">67.2</td><td class="second">76.1</td><td class="second">73.3</td><td>21.4</td><td class="second">1.95</td></tr>
+            <tr><td><strong>Fast-dVLM (spec.)</strong></td><td class="best">79.7</td><td class="best">83.1</td><td class="best">92.9</td><td class="best">63.3</td><td>74.3</td><td class="second">46.6</td><td class="best">88.6</td><td class="best">65.1</td><td class="second">67.2</td><td class="best">79.3</td><td class="best">74.0</td><td class="best">24.6</td><td class="best">2.63</td></tr>
+          </tbody>
+        </table>
+
+        <!-- Inference Acceleration -->
+        <div class="description-content">
+          <h2>Inference Acceleration</h2>
+          <p>
+            Fast-dVLM combines multiple acceleration techniques for production-grade serving:
+          </p>
+          <p>
+            &nbsp;&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+            <strong style="font-size: 18px;">Confidence-Aware Parallel Decoding:</strong>
+            The confidence threshold &tau; governs the speed&ndash;quality tradeoff. At &tau;=0.9, throughput nearly doubles to 1.95 tokens/step while maintaining accuracy.
+          </p>
+          <p>
+            &nbsp;&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+            <strong style="font-size: 18px;">Self-Speculative Block Decoding:</strong>
+            The diffusion mode drafts all B&minus;1 tokens in one pass and the causal mode verifies them autoregressively, recovering accuracy to 24.6 (close to the AR baseline's 26.3) while achieving 1.98&times; wall-clock TPS speedup.
+          </p>
+          <p>
+            &nbsp;&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+            <strong style="font-size: 18px;">SGLang + FP8 Quantization:</strong>
+            Integration with SGLang's optimized kernels and CUDA graph, combined with SmoothQuant W8A8 (FP8), yields a total of <strong>6.18&times;</strong> end-to-end speedup.
+          </p>
+        </div>
+
+        <table class="results-speed">
+          <thead>
+            <tr>
+              <th>Setting</th>
+              <th>MMMU-Pro-V</th>
+              <th>TPS</th>
+              <th>SpeedUp</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>AR baseline</td><td>26.3</td><td>56.7</td><td>1.00&times;</td></tr>
+            <tr><td>Fast-dVLM (MDM, &tau;=0.9)</td><td>21.4</td><td>82.2</td><td>1.45&times;</td></tr>
+            <tr><td>&nbsp;&nbsp;+ Spec. decoding (linear)</td><td>24.6</td><td>112.7</td><td>1.98&times;</td></tr>
+            <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;+ SGLang serving</td><td>24.1</td><td>319.0</td><td>5.63&times;</td></tr>
+            <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ SmoothQuant-W8A8 (FP8)</td><td>23.8</td><td><strong>350.3</strong></td><td><strong>6.18&times;</strong></td></tr>
+          </tbody>
+        </table>
+
+        <!-- Threshold & Speculative Decoding Figures -->
+        <div style="display: flex; justify-content: center; align-items: flex-end; flex-wrap: wrap; max-width: 80%; margin: 20px auto; gap: 16px;">
+            <figure style="flex: 0 1 28%; min-width: 200px; margin: 0; text-align: center;">
+              <img src="asset/threshold.png" alt="Effect of threshold on accuracy and tokens per step." style="width: 100%; height: auto; border-radius: 10px; box-shadow: 2px 2px 10px 3px #00000030;">
+              <figcaption style="margin-top: 10px; color: #555; font-size: 0.9em;">
+                  Effect of threshold &tau; on accuracy and tokens per step.
+              </figcaption>
+            </figure>
+            <figure style="flex: 0 1 52%; min-width: 300px; margin: 0; text-align: center;">
+              <img src="asset/speculative_decoding.png" alt="Speculative decoding: linear vs quadratic variants." style="width: 100%; height: auto; border-radius: 10px; box-shadow: 2px 2px 10px 3px #00000030;">
+              <figcaption style="margin-top: 10px; color: #555; font-size: 0.9em;">
+                  Speculative decoding throughput: linear vs. quadratic variants across block sizes.
+              </figcaption>
+            </figure>
+        </div>
+
+        <!-- Case Study -->
+        <div class="description-content">
+          <h2>Case Study</h2>
+          <p>
+            We present qualitative examples spanning math reasoning, art recognition, celebrity identification, chart QA, and physical AI scenarios (autonomous driving and robotic manipulation).
+            Across all categories, Fast-dVLM generates detailed, accurate, and fluent responses while maintaining high decoding throughput (63.7&ndash;115.0 tokens/s), with Tokens/NFE ratios consistently above 1.5.
+          </p>
+        </div>
+        <div>
+            <img src="asset/case_study.png" alt="Case study: math reasoning on MMMU-Pro-V."
+                 class="inserted-image">
+        </div>
+        <div>
+            <img src="asset/more_case_study.png" alt="More case studies: art, celebrity, chart QA."
+                 class="inserted-image">
+        </div>
+        <div>
+            <img src="asset/physical_ai.png" alt="Physical AI case study: autonomous driving and robotic manipulation."
+                 class="inserted-image">
+        </div>
+        </section>
+
+    <!-- Footer Section -->
+    <footer class="footer">
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-8">
+                    <div class="content">
+                        <p>
+                            This website is licensed under a <a
+                                rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative
+                                Commons Attribution-ShareAlike 4.0 International License</a>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
