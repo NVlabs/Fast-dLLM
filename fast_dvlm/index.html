@@ -301,8 +301,8 @@
 
         <div style="margin-top: 20px; text-align: center;">
             <p style="font-size: 1.3em; margin-bottom: 5px; line-height: 2.0;">
-                <a href="https://hills-code.github.io/" target="_blank" style="color: #76b900;">Chengyue Wu</a><sup>1,2</sup>,
-                <a href="#" target="_blank" style="color: #76b900;">Shiyi Lan</a><sup>2</sup>,
+                <a href="https://hills-code.github.io/" target="_blank" style="color: #76b900;">Chengyue Wu</a><sup>1,2*</sup>,
+                <a href="#" target="_blank" style="color: #76b900;">Shiyi Lan</a><sup>2*</sup>,
                 <a href="https://www.yongganfu.com/" target="_blank" style="color: #76b900;">Yonggan Fu</a><sup>2</sup>,
                 <a href="https://sensengao.github.io/" target="_blank" style="color: #76b900;">Sensen Gao</a><sup>4</sup>,
                 <a href="https://scholar.google.com/citations?user=AlYwtB4AAAAJ&hl=en" target="_blank" style="color: #76b900;">Jin Wang</a><sup>1,2</sup>,
@@ -312,11 +312,13 @@
                 <a href="https://www.pmolchanov.com/" target="_blank" style="color: #76b900;">Pavlo Molchanov</a><sup>2</sup>,
                 <a href="http://luoping.me/" target="_blank" style="color: #76b900;">Ping Luo</a><sup>1</sup>,
                 <a href="https://hanlab.mit.edu/songhan/" target="_blank" style="color: #76b900;">Song Han</a><sup>2,3</sup>,
-                <a href="https://lzhu.me/" target="_blank" style="color: #76b900;">Ligeng Zhu</a><sup>2</sup>,
-                <a href="https://xieenze.github.io/" target="_blank" style="color: #76b900;">Enze Xie</a><sup>2</sup>
+                <a href="https://lzhu.me/" target="_blank" style="color: #76b900;">Ligeng Zhu</a><sup>2&dagger;</sup>,
+                <a href="https://xieenze.github.io/" target="_blank" style="color: #76b900;">Enze Xie</a><sup>2&dagger;</sup>
             </p>
             <p style="font-size: 1.2em; color: #888;">
                 <sup>1</sup>The University of Hong Kong, <sup>2</sup>NVIDIA, <sup>3</sup>MIT, <sup>4</sup>MBZUAI
+                <br>
+                *Equal contribution &nbsp;&nbsp; &dagger;Co-lead
             </p>
         </div>
 
@@ -395,13 +397,16 @@
             <strong style="font-size: 18px;">Direct path:</strong>
             The complete AR VLM is directly fine-tuned for block-diffusion on multimodal data in a single stage, yielding a simpler pipeline that leverages the pretrained multimodal alignment.
           </p>
-          <p>
-            Under comparable training budgets (both trained on ~2M samples for a single epoch), the direct path achieves a substantially higher average score (<strong>73.3 vs. 60.2</strong>), outperforming the two-stage path on all 10 benchmarks.
-          </p>
         </div>
         <div>
             <img src="asset/dualpath.png" alt="Two AR-to-diffusion conversion strategies: two-stage vs. direct path."
                  class="inserted-image">
+        </div>
+
+        <div class="description-content">
+          <p>
+            Under comparable training budgets (both trained on ~2M samples for a single epoch), the direct path achieves a substantially higher average score (<strong>73.3 vs. 60.2</strong>), outperforming the two-stage path on all 10 benchmarks.
+          </p>
         </div>
 
         <!-- Radar Chart -->
@@ -497,6 +502,10 @@
             <tr><td><strong>Fast-dVLM (spec.)</strong></td><td class="best">79.7</td><td class="best">83.1</td><td class="best">92.9</td><td class="best">63.3</td><td>74.3</td><td class="second">46.6</td><td class="best">88.6</td><td class="best">65.1</td><td class="second">67.2</td><td class="best">79.3</td><td class="best">74.0</td><td class="best">24.6</td><td class="best">2.63</td></tr>
           </tbody>
         </table>
+        <p style="text-align: center; color: #666; font-size: 0.9em; margin-top: -10px;">
+          Among diffusion models, <span style="background-color: #dcebff; padding: 1px 6px; border-radius: 3px; font-weight: bold;">blue bold</span> = best,
+          <span style="background-color: #f0f5ff; padding: 1px 6px; border-radius: 3px; text-decoration: underline;">light blue underline</span> = 2nd best.
+        </p>
 
         <!-- Inference Acceleration -->
         <div class="description-content">
@@ -532,10 +541,18 @@
           </thead>
           <tbody>
             <tr><td>AR baseline</td><td>26.3</td><td>56.7</td><td>1.00&times;</td></tr>
-            <tr><td>Fast-dVLM (MDM, &tau;=0.9)</td><td>21.4</td><td>82.2</td><td>1.45&times;</td></tr>
-            <tr><td>&nbsp;&nbsp;+ Spec. decoding (linear)</td><td>24.6</td><td>112.7</td><td>1.98&times;</td></tr>
-            <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;+ SGLang serving</td><td>24.1</td><td>319.0</td><td>5.63&times;</td></tr>
-            <tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;+ SmoothQuant-W8A8 (FP8)</td><td>23.8</td><td><strong>350.3</strong></td><td><strong>6.18&times;</strong></td></tr>
+            <tr style="border-left: 3px solid #76b900;">
+              <td style="text-align: left; padding-left: 16px;">Fast-dVLM (MDM, &tau;=0.9)</td><td>21.4</td><td>82.2</td><td>1.45&times;</td>
+            </tr>
+            <tr style="border-left: 3px solid #76b900;">
+              <td style="text-align: left; padding-left: 32px;">&plus; Spec. decoding (linear)</td><td>24.6</td><td>112.7</td><td>1.98&times;</td>
+            </tr>
+            <tr style="border-left: 3px solid #76b900;">
+              <td style="text-align: left; padding-left: 48px;">&plus; SGLang serving</td><td>24.1</td><td>319.0</td><td>5.63&times;</td>
+            </tr>
+            <tr style="border-left: 3px solid #76b900; background-color: #f6fbf0;">
+              <td style="text-align: left; padding-left: 64px;">&plus; SmoothQuant-W8A8 (FP8)</td><td>23.8</td><td><strong>350.3</strong></td><td><strong>6.18&times;</strong></td>
+            </tr>
           </tbody>
         </table>
 
