@@ -6,6 +6,7 @@
 <a href="https://fast-dllm.hanlab.ai"><img src="https://img.shields.io/static/v1?label=Demo&message=Fast-dLLM&color=yellow"></a> &ensp;
 
 <h4 align="center"> ICLR 2026 </h4>
+Boo
 
 Fast-dLLM is a family of acceleration techniques for diffusion-based Large Language Models (dLLMs) and Vision-Language Models (dVLMs). This repository contains:
 
