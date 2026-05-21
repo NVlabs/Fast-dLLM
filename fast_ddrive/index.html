@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="shortcut icon" type="image/png" href="https://www.nvidia.com/favicon.ico">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fast-dDrive</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.5;
+            margin: 0;
+            padding: 0;
+            color: black;
+            background-size: contain;
+            background-attachment: fixed;
+            background-position: center;
+            direction: ltr;
+        }
+        .hero {
+            text-align: center;
+            padding: 50px 0;
+            background-color: #fff;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+        }
+        .hero h1 {
+            font-size: 5em;
+            margin: 0.2em 0;
+        }
+        .hero h2 {
+            font-size: 2.8em;
+            margin: 0.2em 0;
+            font-weight: normal;
+            line-height: 1.4;
+        }
+        .hero p {
+            font-size: 1.4em;
+            margin-bottom: 1em;
+        }
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 0.9em;
+            color: white;
+            background-color: black;
+            border-radius: 30px;
+            text-decoration: none;
+        }
+        .button_green {
+            display: inline-block;
+            padding: 10px 20px;
+            margin: 5px;
+            font-size: 0.9em;
+            color: black;
+            background-color: #76b900;
+            border-radius: 30px;
+            text-decoration: none;
+        }
+        .description {
+            font-family: Arial, sans-serif;
+            font-style: normal;
+            font-size: 17px;
+            line-height: 1.47;
+            color: #333;
+            letter-spacing: -0.022em;
+            font-weight: 400;
+            background-color: #fff;
+            padding: 20px 0;
+            text-align: center;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            box-shadow: 2px 4px 12px #00000054;
+        }
+        .description_noborder {
+            font-family: Arial, sans-serif;
+            font-style: normal;
+            font-size: 17px;
+            line-height: 1.47;
+            color: #333;
+            letter-spacing: -0.022em;
+            font-weight: 400;
+            background-color: #fff;
+            padding: 20px 0;
+            text-align: center;
+        }
+        .description-content {
+            max-width: 65%;
+            margin: 0 auto;
+            padding: 20px;
+            font-style: normal;
+            border-radius: 18px;
+        }
+        .description-content h2 {
+            display: block;
+            color: black;
+            font-size: 1.5em;
+            line-height: 1.125;
+            letter-spacing: .004em;
+            font-weight: 600;
+            text-align: left;
+            margin-block-start: 0.83em;
+            margin-block-end: 0.83em;
+            margin-inline-start: 0px;
+            margin-inline-end: 0px;
+            font-style: normal;
+        }
+        .description-content h3 {
+            display: block;
+            color: black;
+            font-size: 1.2em;
+            line-height: 1.125;
+            font-weight: 600;
+            text-align: left;
+            margin-block-start: 0.83em;
+            margin-block-end: 0.4em;
+            font-style: normal;
+        }
+        .description-content p {
+            font-size: 1.1em;
+            text-align: left;
+            font-weight: normal;
+        }
+        .citation {
+            font-family: Arial, sans-serif;
+            background-color: #fff;
+            color: black;
+            padding: 10px;
+            text-align: center;
+            margin-top: 10px;
+        }
+        .citation-content {
+            text-align: left;
+            border-radius: 15px;
+            font-size: 0.8em;
+            max-width: 80%;
+            margin: 0 auto;
+            margin-top: -30px;
+            padding: 0;
+            background-color: #f5f5f5;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+        }
+        .citation-content h2 {
+            font-size: 2em;
+            text-align: left;
+            font-weight: normal;
+        }
+        .citation pre {
+            border-radius: 15px;
+            max-width: 90%;
+            text-align: left;
+        }
+        .footer {
+            background-color: #f5f5f5;
+            box-shadow: 2px 4px 12px #00000054;
+            color: #333;
+            padding: 20px;
+            text-align: center;
+            margin-top: -20px;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+        }
+        .footer a {
+            color: dodgerblue;
+            text-decoration: none;
+        }
+        .inserted-image {
+            display: block;
+            height: auto;
+            max-width: 80%;
+            width: auto;
+            margin: 18px auto;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px 3px #00000030;
+        }
+        .figure-block {
+            text-align: center;
+            margin: 18px auto;
+            padding: 0;
+        }
+        .figure-block figcaption {
+            margin-top: 8px;
+            color: #555;
+            font-size: 0.95em;
+            max-width: 80%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        /* Two figures placed side by side at matched height (each image gets the
+           same pixel height; widths adjust to preserve aspect ratio). */
+        .aligned-figs {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin: 20px auto;
+            max-width: 92%;
+        }
+        .aligned-figs figure { margin: 0; text-align: center; flex: 0 1 auto; }
+        .aligned-figs img {
+            height: 320px;
+            width: auto;
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px 3px #00000030;
+        }
+        .aligned-figs figcaption {
+            margin-top: 10px;
+            color: #555;
+            font-size: 0.9em;
+            max-width: 100%;
+        }
+        @media (max-width: 768px) {
+            .aligned-figs img { height: 180px; }
+        }
+        .inserted-image-noshadow {
+            max-width: 30%;
+            margin-left: auto;
+            margin-right: auto;
+            border-radius: 10px;
+        }
+        .video-container {
+            text-align: center;
+            margin: 20px 0;
+        }
+        video {
+            max-width: 80%;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px 3px #00000054;
+        }
+        .video-container iframe {
+            width: 80%;
+            max-width: 1000px;
+            aspect-ratio: 16 / 9;
+            height: auto;
+            border-radius: 10px;
+            box-shadow: 2px 2px 10px 3px #00000054;
+        }
+        .logo {
+            color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            gap: 60px;
+        }
+        table.results {
+            border-collapse: collapse;
+            margin: 20px auto;
+            font-size: 0.95em;
+            max-width: 90%;
+            text-align: center;
+        }
+        table.results th, table.results td {
+            border: 1px solid #ddd;
+            padding: 8px 10px;
+        }
+        table.results th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+        }
+        table.results td.best {
+            background-color: #dcebff;
+            font-weight: 700;
+        }
+        table.results td.second {
+            background-color: #f0f5ff;
+            text-decoration: underline;
+        }
+        table.results tr.section-header td {
+            background-color: #eee;
+            font-style: italic;
+            text-align: left;
+            font-weight: 600;
+        }
+        table.results-speed {
+            border-collapse: collapse;
+            margin: 20px auto;
+            font-size: 0.95em;
+            max-width: 70%;
+            text-align: center;
+        }
+        table.results-speed th, table.results-speed td {
+            border: 1px solid #ddd;
+            padding: 8px 12px;
+        }
+        table.results-speed th {
+            background-color: #f5f5f5;
+            font-weight: 600;
+        }
+        @media (min-width: 1440px) {
+            .description-content { max-width: 1000px; padding: 10px; }
+            .citation-content { max-width: 1000px; padding: 10px; }
+            .inserted-image { max-width: 1100px; padding: 5px; }
+            video { max-width: 1000px; }
+            .video-container iframe { width: 1000px; }
+        }
+        @media (max-width: 1024px) and (min-width: 769px) {
+            .description-content { max-width: 92%; padding: 10px; }
+            .citation-content { max-width: 92%; padding: 10px; }
+            .inserted-image { max-width: 95%; padding: 5px; }
+            video { max-width: 92%; }
+            .video-container iframe { width: 92%; }
+        }
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 3em; }
+            .hero h2 { font-size: 1.6em; }
+            .hero p { font-size: 1em; }
+            .description-content { max-width: 92%; padding: 10px; }
+            .citation-content { max-width: 92%; padding: 10px; }
+            .inserted-image { max-width: 95%; padding: 5px; }
+            video { max-width: 92%; }
+            .video-container iframe { width: 92%; }
+            .logo { gap: 10px; }
+            table.results { font-size: 0.7em; }
+            table.results th, table.results td { padding: 4px 5px; }
+            table.results-speed { font-size: 0.8em; }
+        }
+        @media (prefers-color-scheme: dark) {
+            .description { background-color: #333; color: white; }
+            .description_noborder { background-color: #333; color: white; }
+            .description_noborder h2 { background-color: #333; color: white; }
+            .description-content h2 { background-color: #333; color: white; }
+            .description-content h3 { background-color: #333; color: white; }
+            .citation { background-color: #333; color: white; }
+            .citation-content { background-color: #555; }
+            .citation-content h2 { background-color: #555; }
+            .footer { background-color: #222; color: white; }
+            table.results th { background-color: #444; color: white; }
+            table.results td { border-color: #555; }
+            table.results tr.section-header td { background-color: #3a3a3a; }
+            table.results td.best { background-color: #2a3a5a; }
+            table.results td.second { background-color: #2f3545; }
+            table.results-speed th { background-color: #444; color: white; }
+            table.results-speed td { border-color: #555; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="hero">
+
+        <h2>Fast-dDrive: Efficient Block-Diffusion VLM<br>
+            for Autonomous Driving</h2>
+
+        <div style="margin-top: 20px; text-align: center;">
+            <p style="font-size: 1.25em; margin-bottom: 5px; line-height: 1.9;">
+                <a href="#" style="color: #76b900;">Kewei Zhang</a><sup>1*</sup>,
+                <a href="#" style="color: #76b900;">Jin Wang</a><sup>3,2*</sup>,
+                <a href="#" style="color: #76b900;">Sensen Gao</a><sup>2</sup>,
+                <a href="#" style="color: #76b900;">Chengyue Wu</a><sup>3,2</sup>,
+                <a href="#" style="color: #76b900;">Yulong Cao</a><sup>2</sup>,
+                <br>
+                <a href="#" style="color: #76b900;">Songyang Han</a><sup>2</sup>,
+                <a href="#" style="color: #76b900;">Boris Ivanovic</a><sup>2</sup>,
+                <a href="#" style="color: #76b900;">Langechuan Liu</a><sup>2</sup>,
+                <a href="#" style="color: #76b900;">Marco Pavone</a><sup>2</sup>,
+                <a href="#" style="color: #76b900;">Song Han</a><sup>4,2</sup>,
+                <br>
+                <a href="#" style="color: #76b900;">Daquan Zhou</a><sup>1&dagger;</sup>,
+                <a href="#" style="color: #76b900;">Enze Xie</a><sup>2&dagger;</sup>
+            </p>
+            <p style="font-size: 1.1em; color: #888; margin-top: 14px;">
+                <sup>1</sup>Peking University &nbsp; <sup>2</sup>NVIDIA &nbsp;
+                <sup>3</sup>The University of Hong Kong &nbsp; <sup>4</sup>MIT
+                <br>
+                <sup>*</sup>Equal contribution &nbsp; <sup>&dagger;</sup>Co-lead
+            </p>
+        </div>
+
+        <a href="#" class="button">Paper (coming soon)</a>
+        <a href="#" class="button">Code (coming soon)</a>
+        <a href="https://nvlabs.github.io/Fast-dLLM/fast_dvlm/" class="button_green">Fast-dVLM</a>
+    </div>
+
+        <!-- Hero Demo Video -->
+        <div class="video-container">
+            <iframe width="560" height="315"
+                    src="https://www.youtube.com/embed/upNm1DVb5vE?si=sJSYXQfBtd13DTyO"
+                    title="YouTube video player"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                    referrerpolicy="strict-origin-when-cross-origin"
+                    allowfullscreen></iframe>
+            <figcaption style="margin-top: 8px; color: #555; font-size: 1em;">
+              Realtime side-by-side comparison on a Waymo end-to-end driving scene.
+              Top: <strong>Qwen-2.5-VL-3B (AR baseline)</strong>.
+              Bottom: <strong>Fast-dDrive (Ours)</strong>.
+            </figcaption>
+        </div>
+
+        <!-- Abstract -->
+        <div class="description-content">
+          <h2>Abstract</h2>
+          <p>
+            End-to-end autonomous driving via Vision-Language-Action (VLA) models demands a precarious balance between high-fidelity trajectory planning and efficient inference. Existing paradigms typically fall short: autoregressive (AR) VLAs are memory-bandwidth-bound on edge hardware and prone to exposure-bias drift, while full-sequence diffusion models preclude KV-cache reuse and suffer from "logical leakage" that violates the fundamental perceive-then-plan causality.
+          </p>
+          <p>
+            We present <strong>Fast-dDrive</strong>, a block-diffusion VLA that performs bidirectional refinement within semantic units while enforcing strict causal ordering across them.
+            Leveraging the observation that driving VLAs often emit structured JSON-like outputs, Fast-dDrive freezes structural tokens into a <strong>section scaffold</strong> and employs a section-aware training recipe (<strong>SASD</strong>) that prioritizes safety-critical planning.
+            We further introduce <strong>Scaffold Speculative Decoding</strong> to achieve AR-equivalent quality at significantly higher throughput.
+            Finally, we propose a low-overhead test-time scaling scheme: by forking <em>N</em> stochastic trajectory rollouts from a single shared-prefix KV cache and averaging them, we effectively suppress prediction variance at a fractional computational cost.
+          </p>
+          <p>
+            Empirical results demonstrate that Fast-dDrive redefines the speed-accuracy frontier for driving agents.
+            On the WOD-E2E test set, Fast-dDrive achieves SOTA <strong>ADE@3s</strong> and <strong>ADE@5s</strong>, alongside the highest RFS among diffusion-based VLAs.
+            On nuScenes, it reduces average L2 error to <strong>0.32&nbsp;m</strong> (a 22% improvement over prior diffusion baselines).
+            When integrated with SGLang, our framework delivers <strong>12&times;</strong> throughput speedup over the AR baseline, narrowing the gap between high-capacity VLAs and the efficiency demands of real-time on-vehicle deployment.
+          </p>
+        </div>
+
+        <!-- Teaser -->
+        <figure class="figure-block">
+            <img src="asset/fast-dDrive-teaser.png" alt="Teaser: Fast-dDrive speed-accuracy frontier on WOD-E2E."
+                 class="inserted-image">
+            <figcaption>
+                Fast-dDrive sits on the speed-accuracy frontier: SOTA ADE@3s/5s on WOD-E2E test set with up to 12&times; throughput speedup over the AR baseline.
+            </figcaption>
+        </figure>
+
+        <!-- Method Overview -->
+        <div class="description-content">
+          <h2>Method Overview</h2>
+          <p>
+            Fast-dDrive combines four innovations that together exploit the <em>structured</em> nature of driving VLA outputs:
+          </p>
+          <p>
+            &nbsp;&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+            <strong style="font-size: 18px;">Section Diffusion (SD):</strong>
+            Replace fixed-size block boundaries with <em>semantically aligned</em> sections (<code>critical_objects</code>, <code>future_meta_behavior</code>, <code>explanation</code>, <code>trajectory</code>). JSON structural tokens are pre-filled as a frozen scaffold; only value tokens are denoised.
+          </p>
+          <p>
+            &nbsp;&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+            <strong style="font-size: 18px;">SASD &mdash; Section-Aware Structured Diffusion:</strong>
+            Per-section importance-weighted loss (<em>trajectory&times;3, FMB&times;2, critical_objects&times;1.5, explanation&times;1</em>) plus section-adaptive Beta noise schedules. Pure training-time technique with zero inference overhead.
+          </p>
+          <p>
+            &nbsp;&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+            <strong style="font-size: 18px;">Scaffold Speculative Decoding:</strong>
+            Per block, MDM block-bidirectional <em>draft</em> + AR causal <em>verify</em>. Scaffold positions are auto-accepted. Matches Deep Scaffold quality at 64% faster latency &mdash; the fastest single-run inference mode.
+          </p>
+          <p>
+            &nbsp;&nbsp;&nbsp;&nbsp;&bull;&nbsp;&nbsp;
+            <strong style="font-size: 18px;">Test-Time Inference Scaling:</strong>
+            Run scaffold spec for the shared CoT prefix once, then fork <em>N</em> stochastic trajectory rollouts from the same KV cache and average. Variance reduction at low marginal cost.
+          </p>
+        </div>
+        <figure class="figure-block">
+            <img src="asset/fast-ddrive-pipeline.png" alt="Fast-dDrive overall pipeline."
+                 class="inserted-image">
+            <figcaption>
+                Overall pipeline: section-aligned scaffolding turns the structured JSON output into denoising-only blocks; SASD weights and noise schedules prioritize safety-critical sections.
+            </figcaption>
+        </figure>
+
+        <!-- Paradigm Comparison -->
+        <div class="description-content">
+          <h2>Why Block Diffusion for Driving?</h2>
+          <p>
+            Existing VLAs fall into two camps: <strong>autoregressive</strong> models (Poutine, AutoVLA) have strong reasoning but are sequential and memory-bandwidth-bound at batch-size-1; <strong>full-sequence diffusion</strong> models (dVLM-AD) gain bidirectional context but suffer from slow iterative denoising and no KV-cache reuse.
+            Fast-dDrive picks the <strong>block diffusion</strong> middle path: bidirectional refinement <em>within</em> a semantic section, strict causal ordering <em>across</em> sections, plus the ability to do speculative verification with the AR head it inherits from its Qwen2.5-VL backbone.
+          </p>
+        </div>
+        <figure class="figure-block">
+            <img src="asset/scaffold_spec.png" alt="Scaffold speculative decoding: MDM draft + AR verify on a section scaffold."
+                 class="inserted-image">
+            <figcaption>
+                Scaffold Speculative Decoding: per block, MDM bidirectional <em>drafts</em> in parallel and AR causal <em>verifies</em> token-by-token, with scaffold positions auto-accepted.
+            </figcaption>
+        </figure>
+
+        <!-- WOD-E2E Test Results -->
+        <div class="description-content">
+          <h2>WOD-E2E Test Set Results</h2>
+          <p>
+            Fast-dDrive achieves the <strong>best ADE@3s and ADE@5s</strong> among all reported methods on the Waymo Open End-to-End Driving test set, while running at <strong>210.4 TPS on a single H100 GPU</strong> &mdash; over 4&times; the throughput of the strongest AR baselines (Poutine/AutoVLA).
+            Adding inference scaling (N=4 shared-prefix multi-rollout) further improves both ADE metrics with only a 1.8&times; cost factor.
+          </p>
+        </div>
+
+        <table class="results">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Paradigm</th>
+              <th>RFS &uarr;</th>
+              <th>ADE 5s &darr;</th>
+              <th>ADE 3s &darr;</th>
+              <th>TPS &uarr;</th>
+              <th>Tok/Step &uarr;</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="section-header"><td colspan="7">Autoregressive VLAs</td></tr>
+            <tr><td>OpenEMMA*</td><td>AR</td><td>5.158</td><td>12.476</td><td>6.684</td><td>&mdash;</td><td>1</td></tr>
+            <tr><td>LightEMMA*</td><td>AR</td><td>6.517</td><td>3.740</td><td>1.705</td><td>&mdash;</td><td>1</td></tr>
+            <tr><td>NaiveEMMA</td><td>AR</td><td>7.528</td><td>3.018</td><td>1.320</td><td>&mdash;</td><td>1</td></tr>
+            <tr><td>AutoVLA</td><td>AR</td><td>7.557</td><td>2.958</td><td>1.351</td><td>51.2</td><td>1</td></tr>
+            <tr><td>Poutine-Base</td><td>AR</td><td class="best">7.909</td><td>2.940</td><td>1.270</td><td>51.2</td><td>1</td></tr>
+            <tr class="section-header"><td colspan="7">Diffusion VLAs</td></tr>
+            <tr><td>dVLM-AD</td><td>Diffusion</td><td>7.633</td><td>3.022</td><td>1.285</td><td>35.2</td><td>2.82</td></tr>
+            <tr><td><strong>Fast-dDrive (Scaffold Spec)</strong></td><td>Block Diff.</td><td>7.823</td><td class="second">2.907</td><td class="second">1.254</td><td class="best">210.4</td><td class="best">4.90</td></tr>
+            <tr><td>&nbsp;&nbsp;+ Inference scaling (N=4)</td><td>Block Diff.</td><td class="second">7.827</td><td class="best">2.821</td><td class="best">1.240</td><td>114.7</td><td>2.76</td></tr>
+          </tbody>
+        </table>
+        <p style="text-align: center; color: #666; font-size: 0.9em; margin-top: -10px;">
+          *: zero-shot. <span style="background-color: #dcebff; padding: 1px 6px; border-radius: 3px; font-weight: bold;">blue bold</span> = best,
+          <span style="background-color: #f0f5ff; padding: 1px 6px; border-radius: 3px; text-decoration: underline;">light blue underline</span> = 2nd best.
+          TPS measured on a single H100.
+        </p>
+
+        <!-- Efficiency Table -->
+        <div class="description-content">
+          <h2>Inference Efficiency</h2>
+          <p>
+            Fast-dDrive's scaffold speculative decoding shrinks per-sample latency from <strong>7855 ms</strong> (AR baseline) to <strong>1919 ms</strong> on a single H100,
+            a <strong>4.1&times;</strong> wall-clock speedup at parity or better accuracy.
+            Plugging in SGLang's optimized kernels with FP8 quantization pushes the speedup to <strong>11.8&times;</strong>, hitting <strong>608 TPS</strong>.
+          </p>
+        </div>
+
+        <table class="results-speed">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>Decoding</th>
+              <th>Latency (ms) &darr;</th>
+              <th>TPS &uarr;</th>
+              <th>Tok/Step &uarr;</th>
+              <th>ADE 5s &darr;</th>
+              <th>RFS &uarr;</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td style="text-align: left;">AR Baseline (Qwen2.5-VL-3B)</td><td>Autoregressive</td><td>7855</td><td>51.6</td><td>1</td><td>2.083</td><td>7.931</td></tr>
+            <tr><td style="text-align: left;">dVLM-AD (Full-seq MDM)</td><td>Iterative Denoise</td><td>9575 (0.8&times;)</td><td>35.2</td><td>2.82</td><td>3.024</td><td>7.187</td></tr>
+            <tr style="border-left: 3px solid #76b900;"><td style="text-align: left;">Fast-dDrive (Self-Spec)</td><td>Draft+Verify</td><td>3714 (2.1&times;)</td><td>109.0</td><td>2.41</td><td>1.973</td><td>7.959</td></tr>
+            <tr style="border-left: 3px solid #76b900;"><td style="text-align: left;">Fast-dDrive (Section Diffusion)</td><td>Iterative MDM</td><td>3006 (2.6&times;)</td><td>134.4</td><td>3.28</td><td>2.058</td><td>7.928</td></tr>
+            <tr style="border-left: 3px solid #76b900;"><td style="text-align: left;">&nbsp;&nbsp;+ Scaffold Spec</td><td>Scaffold + D&amp;V</td><td>1919 (4.1&times;)</td><td>210.4</td><td>4.90</td><td>1.982</td><td>7.934</td></tr>
+            <tr style="border-left: 3px solid #76b900; background-color: #f6fbf0;"><td style="text-align: left;">&nbsp;&nbsp;&nbsp;&nbsp;+ SGLang serving</td><td>Scaffold + D&amp;V</td><td><strong>665 (11.8&times;)</strong></td><td><strong>608.5</strong></td><td>4.93</td><td>1.995</td><td>7.914</td></tr>
+          </tbody>
+        </table>
+
+        <!-- nuScenes Generalization -->
+        <div class="description-content">
+          <h2>Generalization: nuScenes</h2>
+          <p>
+            Fast-dDrive transfers strongly to the nuScenes benchmark, reducing L2 prediction error to <strong>0.32 m</strong> on average &mdash; outperforming both
+            classical training-based policies (UniAD, VAD, BEV-Planner) and recent reasoning-based VLAs (DriveVLM, AutoVLA, dVLM-AD).
+            This is a <strong>22% relative improvement</strong> over the best prior reasoning-based result.
+          </p>
+        </div>
+
+        <table class="results-speed">
+          <thead>
+            <tr>
+              <th>Method</th>
+              <th>L2 @1s &darr;</th>
+              <th>L2 @2s &darr;</th>
+              <th>L2 @3s &darr;</th>
+              <th>Avg &darr;</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="section-header"><td colspan="5" style="text-align:left;"><em>Training-based Policy</em></td></tr>
+            <tr><td style="text-align:left;">UniAD</td><td>0.20</td><td>0.42</td><td>0.75</td><td>0.46</td></tr>
+            <tr><td style="text-align:left;">VAD-Base</td><td>0.17</td><td>0.34</td><td>0.60</td><td>0.37</td></tr>
+            <tr><td style="text-align:left;">BEV-Planner</td><td>0.16</td><td>0.32</td><td>0.57</td><td>0.35</td></tr>
+            <tr class="section-header"><td colspan="5" style="text-align:left;"><em>VLMs / VLAs with Reasoning</em></td></tr>
+            <tr><td style="text-align:left;">OpenEMMA*</td><td>1.45</td><td>3.21</td><td>3.76</td><td>2.81</td></tr>
+            <tr><td style="text-align:left;">DriveVLM</td><td>0.18</td><td>0.34</td><td>0.68</td><td>0.40</td></tr>
+            <tr><td style="text-align:left;">AutoVLA</td><td>0.25</td><td>0.46</td><td>0.73</td><td>0.48</td></tr>
+            <tr><td style="text-align:left;">dVLM-AD</td><td>0.15</td><td>0.40</td><td>0.68</td><td>0.41</td></tr>
+            <tr style="border-left: 3px solid #76b900;"><td style="text-align:left;"><strong>Fast-dDrive (ours)</strong></td><td class="best">0.12</td><td class="best">0.33</td><td class="best">0.50</td><td class="best">0.32</td></tr>
+          </tbody>
+        </table>
+
+        <!-- Test-Time Inference Scaling + Qualitative Multi-Rollout -->
+        <div class="description-content">
+          <h2>Test-Time Inference Scaling</h2>
+          <p>
+            Single-mode multi-sampling (temperature perturbation) collapses to one answer because the AR verify head is deterministic.
+            We instead generate <em>N</em> stochastic trajectory rollouts from a <strong>shared scaffold-spec prefix</strong>, applying non-zero verify temperature only on the trajectory section, and averaging waypoints.
+            The first three sections (<code>critical_objects</code>, <code>explanation</code>, <code>future_meta_behavior</code>) are heavily structured by the schema, so we keep the AR verifier greedy there and only enable sampling once decoding enters the trajectory section.
+            On a representative WOD-E2E val sample, the <em>N</em>=4 rollouts disagree most at the late waypoints, while their mean lies right on top of the ground truth; ADE@5s decreases monotonically with <em>N</em>, confirming the variance-of-the-mean argument.
+          </p>
+        </div>
+        <figure class="figure-block">
+            <img src="asset/ss_multi_rollout_wrapfig.png" alt="Shared-prefix multi-trajectory rollouts: (a) N=4 rollouts vs ground truth, (b) ADE@5s decreasing with N."
+                 class="inserted-image" style="max-width: 50%;">
+            <figcaption>
+                <strong>(a)</strong> <em>N</em>=4 trajectory rollouts (light blue) diverge at the late waypoints, while their mean (dark blue) lies on the ground truth (black).<br>
+                <strong>(b)</strong> Mean ADE@5s on WOD-E2E val decreases monotonically with <em>N</em>.
+            </figcaption>
+        </figure>
+
+    <!-- BibTeX Citation -->
+    <div class="citation">
+        <div class="description-content">
+            <h2>BibTeX</h2>
+        </div>
+        <div class="citation-content">
+            <pre><code>@article{fastddrive2026,
+    title={Fast-dDrive: Fast Block-Diffusion VLA for Efficient and Accurate Autonomous Driving},
+    author={Anonymous},
+    year={2026},
+    eprint={arXiv:XXXX.XXXXX},
+    archivePrefix={arXiv},
+    primaryClass={cs.CV}
+}</code></pre>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="columns is-centered">
+                <div class="column is-8">
+                    <div class="content">
+                        <p>
+                            Page layout adapted from the
+                            <a href="https://nvlabs.github.io/Fast-dLLM/fast_dvlm/" target="_blank">Fast-dVLM project page</a>.
+                            This website is licensed under a <a
+                                rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/" target="_blank">Creative
+                                Commons Attribution-ShareAlike 4.0 International License</a>.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>
