@@ -57,7 +57,11 @@ def main():
     text = processor.apply_chat_template(messages, tokenize=False, add_generation_prompt=True)
     inputs = processor(text=[text], images=[image], return_tensors="pt").to("cuda:0")
 
-    mask_id = int(tokenizer.encode("|<MASK>|", add_special_tokens=False)[0])
+    mask_token = "|<MASK>|"
+    mask_ids = tokenizer.encode(mask_token, add_special_tokens=False)
+    if len(mask_ids) != 1:
+        raise ValueError(f"Expected {mask_token!r} to map to a single token, got {mask_ids}")
+    mask_id = int(mask_ids[0])
     kwargs = dict(
         input_ids=inputs.input_ids,
         tokenizer=tokenizer,
