@@ -23,7 +23,7 @@ MODEL_PATH="${MODEL_PATH:-Efficient-Large-Model/Fast-dDrive}"
 : "${IMAGE_ROOT:?Set IMAGE_ROOT to the directory referenced by EVAL_JSON image paths.}"
 
 MODE="${MODE:-scaffold_spec}"
-NUM_GPUS="${NUM_GPUS:-$(nvidia-smi --list-gpus 2>/dev/null | wc -l | tr -d '[:space:]')}"
+NUM_GPUS="${NUM_GPUS:-$(nvidia-smi --list-gpus 2>/dev/null | wc -l | tr -d '[:space:]' || true)}"
 [[ "${NUM_GPUS}" =~ ^[0-9]+$ ]] && [ "${NUM_GPUS}" -ge 1 ] || NUM_GPUS=1
 OUTPUT_DIR="${OUTPUT_DIR:-${FAST_DDRIVE_ROOT}/eval_outputs/$(basename "${MODEL_PATH}")_${MODE}}"
 
