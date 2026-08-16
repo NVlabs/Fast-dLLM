@@ -194,6 +194,7 @@ class WaymoEvaluatorSpeculative:
         self.top_k = top_k
         self.section_block_steps = section_block_steps
         self.section_token_budgets = section_token_budgets
+        self._init_dav_config()
 
         print(f"[{device}] 加载 processor: {base_model}", flush=True)
         proc_kwargs = {}
