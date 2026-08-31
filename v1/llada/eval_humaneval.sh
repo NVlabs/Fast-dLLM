@@ -34,7 +34,7 @@ accelerate launch eval_llada.py --tasks ${task} \
 # dual cache+parallel
 accelerate launch eval_llada.py --tasks ${task} \
 --confirm_run_unsafe_code --model llada_dist \
---model_args model_path='GSAI-ML/LLaDA-8B-Instruct',gen_length=${length},steps=${steps},block_length=${block_length},use_cache=True,dual_cache=True,threshold=0.9,show_speed=True \
+--model_args model_path='GSAI-ML/LLaDA-8B-Instruct',gen_length=${length},steps=${length},block_length=${block_length},use_cache=True,dual_cache=True,threshold=0.9,show_speed=True \
 --output_path evals_results/dual_cache_parallel/humaneval-ns0-${length} --log_samples
 
 ## NOTICE: use postprocess for humaneval
